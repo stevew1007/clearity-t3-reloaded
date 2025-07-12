@@ -1,6 +1,5 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 
 import { db } from "~/server/db";
 import {
@@ -38,16 +37,40 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    DiscordProvider,
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
+    {
+      id: "eve-sso",
+      name: "EVE Online",
+      type: "oauth",
+      authorization: {
+        url: "https://login.eveonline.com/v2/oauth/authorize",
+        params: {
+          scope: "esi-characters.read_characters.v1",
+          response_type: "code",
+        },
+      },
+      token: "https://login.eveonline.com/v2/oauth/token",
+      userinfo: {
+        url: "https://esi.evetech.net/verify/",
+        async request({ tokens, provider }) {
+          const response = await fetch("https://esi.evetech.net/verify/", {
+            headers: {
+              Authorization: `Bearer ${tokens.access_token}`,
+            },
+          });
+          return await response.json();
+        },
+      },
+      clientId: process.env.AUTH_EVE_CLIENT_ID,
+      clientSecret: process.env.AUTH_EVE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.CharacterID.toString(),
+          name: profile.CharacterName,
+          email: null,
+          image: `https://images.evetech.net/characters/${profile.CharacterID}/portrait?size=128`,
+        };
+      },
+    },
   ],
   adapter: DrizzleAdapter(db, {
     usersTable: users,
