@@ -47,13 +47,17 @@ export async function POST(req: NextRequest) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user with hashed password
+    // Generate avatar URL for new user
+    const avatarUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}`;
+
+    // Create user with hashed password and avatar
     const newUser = await db
       .insert(users)
       .values({
         name,
         email,
         password: hashedPassword,
+        image: avatarUrl,
         emailVerified: null,
       })
       .returning({

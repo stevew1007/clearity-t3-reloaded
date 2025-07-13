@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
@@ -27,7 +28,7 @@ export function SignupForm({
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert("Passwords don't match");
+      toast.error("Passwords don't match");
       return;
     }
 
@@ -49,14 +50,14 @@ export function SignupForm({
       const data = (await response.json()) as { error?: string };
 
       if (response.ok) {
-        alert("Account created successfully! Please sign in.");
+        toast.success("Account created successfully! Please sign in.");
         window.location.href = "/login";
       } else {
-        alert(data.error ?? "Signup failed");
+        toast.error(data.error ?? "Signup failed");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      alert("Signup failed");
+      toast.error("Signup failed");
     } finally {
       setIsLoading(false);
     }

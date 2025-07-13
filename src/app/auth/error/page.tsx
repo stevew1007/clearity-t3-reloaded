@@ -17,26 +17,39 @@ function ErrorContent() {
   const error = searchParams.get("error");
 
   const getErrorMessage = (error: string | null) => {
-    const errorMessages: Record<string, { title: string; description: string }> = {
+    const errorMessages: Record<
+      string,
+      { title: string; description: string }
+    > = {
       Configuration: {
         title: "Server Error",
         description: "There is a problem with the server configuration.",
       },
       AccessDenied: {
         title: "Access Denied",
-        description: "Sign up is currently disabled. Only existing users can sign in.",
+        description: "No user signup is allowed at this time.",
       },
       Verification: {
         title: "Verification Error",
         description: "The verification token has expired or is invalid.",
       },
       Default: {
-        title: "Authentication Error",
-        description: "An error occurred during authentication. Please try again.",
+        title: "Something went wrong",
+        description:
+          "Please try again or contact support if the problem persists.",
       },
     };
 
-    return errorMessages[error ?? ""] ?? errorMessages.Default!;
+    const defaultMessage = errorMessages.Default!;
+    if (!error || errorMessages[error]) {
+      return errorMessages[error ?? ""] ?? defaultMessage;
+    }
+
+    // For unknown errors, include the error code
+    return {
+      title: defaultMessage.title,
+      description: `${defaultMessage.description} (Error: ${error})`,
+    };
   };
 
   const { title, description } = getErrorMessage(error);
@@ -64,13 +77,15 @@ function ErrorContent() {
 export default function AuthErrorPage() {
   return (
     <AuthLayout>
-      <Suspense fallback={
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Loading...</CardTitle>
-          </CardHeader>
-        </Card>
-      }>
+      <Suspense
+        fallback={
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl">Loading...</CardTitle>
+            </CardHeader>
+          </Card>
+        }
+      >
         <ErrorContent />
       </Suspense>
     </AuthLayout>

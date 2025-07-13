@@ -7,6 +7,7 @@ export default async function DashboardPage() {
 
   // Redirect unauthenticated users to landing page
   if (!session) {
+    console.log("Missing session");
     redirect("/");
   }
 
@@ -21,7 +22,10 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-4 text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={session.user.image ?? "/default-avatar.png"}
+              src={
+                session.user.image ??
+                `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(session.user.name ?? "User")}`
+              }
               alt={session.user.name ?? "User"}
               className="h-12 w-12 rounded-full"
             />

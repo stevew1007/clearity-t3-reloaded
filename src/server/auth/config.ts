@@ -41,6 +41,9 @@ export const authConfig = {
     signIn: "/login",
     error: "/auth/error",
   },
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     Discord({
       clientId: env.AUTH_DISCORD_ID,
@@ -64,54 +67,61 @@ export const authConfig = {
         },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        // Type guards to ensure we have strings
-        const email = credentials.email;
-        const password = credentials.password;
-        if (typeof email !== "string" || typeof password !== "string") {
-          return null;
-        }
-
-        // Check if user exists in database
-        const user = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1);
-
-        if (user.length === 0) {
-          return null;
-        }
-
-        const dbUser = user[0]!; // Safe because we checked length above
-
-        // Verify password using bcrypt
-        if (!dbUser.password) {
-          return null;
-        }
-
         try {
+          if (!credentials?.email || !credentials?.password) {
+            console.log("Missing email or password credentials");
+            return null;
+          }
+
+          // Type guards to ensure we have strings
+          const email = credentials.email;
+          const password = credentials.password;
+          if (typeof email !== "string" || typeof password !== "string") {
+            console.log("Invalid credential types");
+            return null;
+          }
+
+          // Check if user exists in database
+          const user = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
+
+          if (user.length === 0) {
+            console.log("User not found:", email);
+            return null;
+          }
+
+          const dbUser = user[0]!; // Safe because we checked length above
+
+          // Verify password using bcrypt
+          if (!dbUser.password) {
+            console.log("User has no password (OAuth user?):", email);
+            return null;
+          }
+
           const isValidPassword = await bcrypt.compare(
             password,
             dbUser.password,
           );
+
           if (isValidPassword) {
+            console.log("Successful login for:", email);
             return {
               id: dbUser.id,
               name: dbUser.name,
               email: dbUser.email,
               image: dbUser.image,
             };
+          } else {
+            console.log("Invalid password for:", email);
+            return null;
           }
         } catch (error) {
-          console.error("Password comparison error:", error);
+          console.error("Authorization error:", error);
           return null;
         }
-
-        return null;
       },
     }),
   ],
@@ -139,16 +149,48 @@ export const authConfig = {
           }
         }
       }
-      
+
+      // For Discord users, ensure they have an avatar
+      if (account?.provider === "discord" && user.email && user.name) {
+        try {
+          const existingUser = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, user.email))
+            .limit(1);
+
+          if (existingUser.length > 0 && !existingUser[0]!.image) {
+            // User exists but has no image, generate one
+            const avatarUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}`;
+
+            await db
+              .update(users)
+              .set({ image: avatarUrl })
+              .where(eq(users.email, user.email));
+
+            console.log("Generated avatar for Discord user:", user.email);
+          }
+        } catch (error) {
+          console.error("Error updating Discord user avatar:", error);
+          // Don't fail signin for avatar issues
+        }
+      }
+
       // Allow sign in (either signup is enabled or user exists)
       return true;
     },
-    session: ({ session, user }) => ({
+    session: ({ session, token }) => ({
       ...session,
       user: {
         ...session.user,
-        id: user.id,
+        id: token.sub,
       },
     }),
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.sub = user.id;
+      }
+      return token;
+    },
   },
 } satisfies NextAuthConfig;

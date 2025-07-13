@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
@@ -15,13 +16,19 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 
+interface LoginFormProps extends React.ComponentProps<"div"> {
+  signupAllowed: boolean;
+}
+
 export function LoginForm({
+  signupAllowed,
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: LoginFormProps) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +40,8 @@ export function LoginForm({
         redirect: false,
       });
       if (result?.ok) {
-        window.location.href = "/dashboard";
+        toast.success("Successfully signed in!");
+        router.push("/dashboard");
       } else {
         toast.error("Invalid email or password");
       }
@@ -114,7 +122,7 @@ export function LoginForm({
                 </Button>
               </div>
               {/* Only show signup link if signup is enabled */}
-              {process.env.ENABLE_SIGNUP === "true" && (
+              {signupAllowed && (
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <a href="/signup" className="underline underline-offset-4">

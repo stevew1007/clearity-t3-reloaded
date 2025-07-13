@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable}`}>
       <body>
         <ClientSessionProvider>{children}</ClientSessionProvider>
-        <Toaster />
+        <Toaster position="top-center" />
       </body>
     </html>
   );
