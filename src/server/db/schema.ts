@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
+import { foreignKey, index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -10,27 +10,6 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator(
   (name) => `clearity-t3-reloaded_${name}`,
-);
-
-export const posts = createTable(
-  "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
-  ],
 );
 
 export const users = createTable("user", (d) => ({
@@ -52,6 +31,7 @@ export const users = createTable("user", (d) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  eveCharacters: many(eveCharacters),
 }));
 
 export const accounts = createTable(
@@ -108,3 +88,44 @@ export const verificationTokens = createTable(
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
 );
+
+export const eveCharacters = createTable(
+  "eve_character",
+  (d) => ({
+    id: d.serial().primaryKey(),
+    characterId: d.bigint({ mode: "number" }).notNull().unique(),
+    characterName: d.varchar({ length: 255 }).notNull(),
+    corporationId: d.bigint({ mode: "number" }),
+    corporationName: d.varchar({ length: 255 }),
+    allianceId: d.bigint({ mode: "number" }),
+    allianceName: d.varchar({ length: 255 }),
+    portraitUrl: d.varchar({ length: 512 }),
+    provider: d.varchar({ length: 255 }).notNull().default("eveonline"),
+    providerAccountId: d.varchar({ length: 255 }).notNull(),
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    index("eve_character_user_id_idx").on(t.userId),
+    index("eve_character_character_id_idx").on(t.characterId),
+    foreignKey({
+      columns: [t.provider, t.providerAccountId],
+      foreignColumns: [accounts.provider, accounts.providerAccountId],
+    }),
+  ],
+);
+
+export const eveCharactersRelations = relations(eveCharacters, ({ one }) => ({
+  user: one(users, { fields: [eveCharacters.userId], references: [users.id] }),
+  account: one(accounts, { 
+    fields: [eveCharacters.provider, eveCharacters.providerAccountId], 
+    references: [accounts.provider, accounts.providerAccountId] 
+  }),
+}));
