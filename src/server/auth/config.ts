@@ -126,6 +126,22 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Redirect to root after successful signin
+      if (url === baseUrl + "/login") {
+        return baseUrl + "/";
+      }
+      // If url is relative, make it absolute
+      if (url.startsWith("/")) {
+        return baseUrl + url;
+      }
+      // If url is on same origin, allow it
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // Otherwise redirect to base URL
+      return baseUrl + "/";
+    },
     authorized({ auth }) {
       // Require authentication for all matched routes
       return !!auth?.user;
