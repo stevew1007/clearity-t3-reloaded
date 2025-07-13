@@ -20,7 +20,7 @@ import {
 import { useSession } from "next-auth/react";
 
 import { NavDocuments } from "~/components/nav-documents";
-import { NavMain } from "~/components/nav-main";
+// import { NavMain } from "~/components/nav-main";
 import { NavSecondary } from "~/components/nav-secondary";
 import { NavUser } from "~/components/nav-user";
 import {
@@ -152,18 +152,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ? {
         name: session.user.name ?? "User",
         email: session.user.email ?? "",
-        avatar: session.user.image ?? "/avatars/default.jpg",
+        avatar: session.user.image ?? "",
       }
     : {
         name: "Guest",
         email: "",
-        avatar: "/avatars/default.jpg",
+        avatar: "",
       };
 
   return (
     <Sidebar
       // collapsible="offcanvas"
-      className="[&_[data-sidebar=menu-button]]:text-white [&_[data-sidebar=menu-button]:hover]:bg-white/20 [&_[data-sidebar=menu-button]:hover]:text-white [&_[data-sidebar=sidebar]]:bg-transparent"
+      className="[&_[data-sidebar=sidebar]]:bg-transparent"
       {...props}
     >
       <SidebarHeader>
@@ -171,23 +171,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="justify-start data-[slot=sidebar-menu-button]:!px-4 data-[slot=sidebar-menu-button]:!py-6"
+              className="justify-start data-[slot=sidebar-menu-button]:!px-3 data-[slot=sidebar-menu-button]:!py-6"
             >
               <a href="#" className="flex justify-start">
-                <span className="text-2xl font-bold text-white">
-                  Clear<span className="!text-cyan-300">i</span>ty
+                <span className="text-2xl font-bold text-gray-900 md:text-white">
+                  Clear
+                  <span className="text-blue-600 md:text-cyan-300">i</span>
+                  ty
                 </span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <NavUser user={user} />
         </SidebarMenu>
         {/*  */}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-        <NavUser user={user} />
+        {/* <NavMain items={data.navMain} /> */}
+        <NavDocuments items={data.documents} className="lg:text-white" />
+        <NavSecondary
+          items={data.navSecondary}
+          className="mt-auto lg:text-white"
+        />
       </SidebarContent>
       <SidebarFooter></SidebarFooter>
     </Sidebar>
