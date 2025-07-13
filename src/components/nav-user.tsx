@@ -34,11 +34,6 @@ export function NavUser({
     avatar: string;
   };
 }) {
-  // Debug avatar URL
-  console.log("Avatar URL:", user.avatar);
-  console.log("Avatar URL type:", typeof user.avatar);
-  console.log("Avatar URL length:", user.avatar?.length);
-
   return (
     <SidebarMenu className="py-2 pl-2">
       <SidebarMenuItem>

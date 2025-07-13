@@ -29,7 +29,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
+  // SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
 
@@ -169,18 +169,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="justify-start data-[slot=sidebar-menu-button]:!px-3 data-[slot=sidebar-menu-button]:!py-6"
-            >
-              <a href="#" className="flex justify-start">
+            <div className="justify-start p-3">
+              <div className="flex justify-start">
                 <span className="text-2xl font-bold text-gray-900 md:text-white">
                   Clear
                   <span className="text-blue-600 md:text-cyan-300">i</span>
                   ty
                 </span>
-              </a>
-            </SidebarMenuButton>
+              </div>
+            </div>
           </SidebarMenuItem>
           <NavUser user={user} />
         </SidebarMenu>
@@ -188,10 +185,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         {/* <NavMain items={data.navMain} /> */}
-        <NavDocuments items={data.documents} className="lg:text-white" />
+        <NavDocuments items={data.documents} className="md:text-white" />
         <NavSecondary
           items={data.navSecondary}
-          className="mt-auto lg:text-white"
+          className="mt-auto md:text-white"
         />
       </SidebarContent>
       <SidebarFooter></SidebarFooter>
