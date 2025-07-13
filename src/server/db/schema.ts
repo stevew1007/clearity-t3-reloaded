@@ -1,5 +1,10 @@
 import { relations, sql } from "drizzle-orm";
-import { foreignKey, index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
+import {
+  foreignKey,
+  index,
+  pgTableCreator,
+  primaryKey,
+} from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -27,6 +32,7 @@ export const users = createTable("user", (d) => ({
     })
     .default(sql`CURRENT_TIMESTAMP`),
   image: d.varchar({ length: 255 }),
+  password: d.varchar({ length: 255 }), // For email/password authentication
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -124,8 +130,8 @@ export const eveCharacters = createTable(
 
 export const eveCharactersRelations = relations(eveCharacters, ({ one }) => ({
   user: one(users, { fields: [eveCharacters.userId], references: [users.id] }),
-  account: one(accounts, { 
-    fields: [eveCharacters.provider, eveCharacters.providerAccountId], 
-    references: [accounts.provider, accounts.providerAccountId] 
+  account: one(accounts, {
+    fields: [eveCharacters.provider, eveCharacters.providerAccountId],
+    references: [accounts.provider, accounts.providerAccountId],
   }),
 }));

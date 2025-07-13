@@ -3,9 +3,10 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ClientSessionProvider } from "~/components/session-provider";
+import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Clearity EVE",
+  title: "Clearity",
   description: "EVE Online corporation management tool",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
@@ -21,9 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body>
-        <ClientSessionProvider>
-          {children}
-        </ClientSessionProvider>
+        <ClientSessionProvider>{children}</ClientSessionProvider>
+        <Toaster />
       </body>
     </html>
   );

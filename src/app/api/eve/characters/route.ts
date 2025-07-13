@@ -6,7 +6,7 @@ import { eq, and } from "drizzle-orm";
 
 export async function GET() {
   const session = await auth();
-  
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -28,19 +28,22 @@ export async function GET() {
     return NextResponse.json({ characters });
   } catch (error) {
     console.error("Failed to fetch EVE characters:", error);
-    return NextResponse.json({ error: "Failed to fetch characters" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch characters" },
+      { status: 500 },
+    );
   }
 }
 
 export async function DELETE(request: Request) {
   const session = await auth();
-  
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { characterId } = await request.json() as { characterId: number };
+    const { characterId } = (await request.json()) as { characterId: number };
     const characterIdStr = characterId.toString();
 
     // Delete from both tables - eve_characters and accounts
@@ -51,8 +54,8 @@ export async function DELETE(request: Request) {
         .where(
           and(
             eq(eveCharacters.characterId, characterId),
-            eq(eveCharacters.userId, session.user.id)
-          )
+            eq(eveCharacters.userId, session.user.id),
+          ),
         );
 
       // Delete OAuth account data
@@ -62,14 +65,17 @@ export async function DELETE(request: Request) {
           and(
             eq(accounts.provider, "eveonline"),
             eq(accounts.providerAccountId, characterIdStr),
-            eq(accounts.userId, session.user.id)
-          )
+            eq(accounts.userId, session.user.id),
+          ),
         );
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to unlink EVE character:", error);
-    return NextResponse.json({ error: "Failed to unlink character" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to unlink character" },
+      { status: 500 },
+    );
   }
 }
