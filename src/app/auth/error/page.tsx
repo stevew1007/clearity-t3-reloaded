@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthLayout } from "~/components/auth-layout";
 import { Button } from "~/components/ui/button";
@@ -11,7 +12,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 
-export default function AuthErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -41,23 +42,37 @@ export default function AuthErrorPage() {
   const { title, description } = getErrorMessage(error);
 
   return (
+    <Card>
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-4">
+          <Button
+            onClick={() => (window.location.href = "/login")}
+            className="w-full"
+          >
+            Back to Login
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
     <AuthLayout>
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <Button
-              onClick={() => (window.location.href = "/login")}
-              className="w-full"
-            >
-              Back to Login
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Suspense fallback={
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Loading...</CardTitle>
+          </CardHeader>
+        </Card>
+      }>
+        <ErrorContent />
+      </Suspense>
     </AuthLayout>
   );
 }
