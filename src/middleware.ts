@@ -14,6 +14,7 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api/auth (NextAuth.js authentication API routes)
+     * - auth/error (authentication error page)
      * - login (login page)
      * - signup (signup page)
      * - _next/static (static files)
@@ -25,6 +26,6 @@ export const config = {
      * - /api/* (except /api/auth/*)
      * - Any other custom routes you add
      */
-    "/((?!api/auth|login|signup|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/auth|auth/error|login|signup|_next/static|_next/image|favicon.ico).*)",
   ],
 };

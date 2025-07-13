@@ -142,8 +142,11 @@ export const authConfig = {
             .limit(1);
 
           if (existingUser.length === 0) {
-            // User doesn't exist and signup is disabled
-            return false;
+            console.warn(
+              `User with email ${user.email} does not exist and signup is disabled.`,
+            );
+            // User doesn't exist and signup is disabled - redirect to error page
+            return "/auth/error?error=AccessDenied";
           }
         }
       }
@@ -157,6 +160,8 @@ export const authConfig = {
             .where(eq(users.email, user.email))
             .limit(1);
 
+          console.log("Existing user:", existingUser);
+
           if (existingUser.length > 0 && !existingUser[0]!.image) {
             // User exists but has no image, generate one
             const avatarUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}`;
@@ -165,7 +170,6 @@ export const authConfig = {
               .update(users)
               .set({ image: avatarUrl })
               .where(eq(users.email, user.email));
-
           }
         } catch (error) {
           console.error("Error updating Discord user avatar:", error);
