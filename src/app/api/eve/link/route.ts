@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
       });
 
     return NextResponse.redirect(
-      `${request.nextUrl.origin}/dashboard?linked=${characterData.CharacterName}`,
+      `${request.nextUrl.origin}/?linked=${characterData.CharacterName}`,
     );
   } catch (error) {
     console.error("EVE character linking error:", error);

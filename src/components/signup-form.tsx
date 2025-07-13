@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
@@ -23,6 +25,7 @@ export function SignupForm({
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +53,24 @@ export function SignupForm({
       const data = (await response.json()) as { error?: string };
 
       if (response.ok) {
-        toast.success("Account created successfully! Please sign in.");
-        window.location.href = "/login";
+        toast.success("Account created successfully! Signing you in...");
+
+        // Automatically sign in the user with the credentials they just used
+        const signInResult = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (signInResult?.ok) {
+          toast.success("Successfully signed in!");
+          router.push("/");
+        } else {
+          toast.error(
+            "Account created but sign in failed. Please sign in manually.",
+          );
+          router.push("/login");
+        }
       } else {
         toast.error(data.error ?? "Signup failed");
       }
@@ -134,10 +153,6 @@ export function SignupForm({
           </form>
         </CardContent>
       </Card>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </div>
     </div>
   );
 }

@@ -69,7 +69,6 @@ export const authConfig = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.log("Missing email or password credentials");
             return null;
           }
 
@@ -77,7 +76,6 @@ export const authConfig = {
           const email = credentials.email;
           const password = credentials.password;
           if (typeof email !== "string" || typeof password !== "string") {
-            console.log("Invalid credential types");
             return null;
           }
 
@@ -89,7 +87,6 @@ export const authConfig = {
             .limit(1);
 
           if (user.length === 0) {
-            console.log("User not found:", email);
             return null;
           }
 
@@ -97,7 +94,6 @@ export const authConfig = {
 
           // Verify password using bcrypt
           if (!dbUser.password) {
-            console.log("User has no password (OAuth user?):", email);
             return null;
           }
 
@@ -107,7 +103,6 @@ export const authConfig = {
           );
 
           if (isValidPassword) {
-            console.log("Successful login for:", email);
             return {
               id: dbUser.id,
               name: dbUser.name,
@@ -115,7 +110,6 @@ export const authConfig = {
               image: dbUser.image,
             };
           } else {
-            console.log("Invalid password for:", email);
             return null;
           }
         } catch (error) {
@@ -132,6 +126,10 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
+    authorized({ auth }) {
+      // Require authentication for all matched routes
+      return !!auth?.user;
+    },
     async signIn({ user, account }) {
       // If signup is disabled, only allow existing users to sign in
       if (process.env.ENABLE_SIGNUP !== "true") {
@@ -168,7 +166,6 @@ export const authConfig = {
               .set({ image: avatarUrl })
               .where(eq(users.email, user.email));
 
-            console.log("Generated avatar for Discord user:", user.email);
           }
         } catch (error) {
           console.error("Error updating Discord user avatar:", error);

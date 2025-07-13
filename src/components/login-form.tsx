@@ -39,11 +39,25 @@ export function LoginForm({
         password,
         redirect: false,
       });
-      if (result?.ok) {
+
+      // Check for error first, since NextAuth can return ok:true even with errors
+      if (result?.error) {
+        // Handle specific error types
+        switch (result.error) {
+          case "CredentialsSignin":
+            toast.error("Invalid email or password");
+            break;
+          case "AccessDenied":
+            toast.error("Access denied");
+            break;
+          default:
+            toast.error(`Sign in failed: ${result.error}`);
+        }
+      } else if (result?.ok) {
         toast.success("Successfully signed in!");
-        router.push("/dashboard");
+        router.push("/");
       } else {
-        toast.error("Invalid email or password");
+        toast.error("Sign in failed. Please try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -117,8 +131,12 @@ export function LoginForm({
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Login"}
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-800 to-blue-900 text-white shadow-lg hover:from-blue-900 hover:to-slate-900"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
               </div>
               {/* Only show signup link if signup is enabled */}
@@ -134,10 +152,6 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </div>
     </div>
   );
 }
