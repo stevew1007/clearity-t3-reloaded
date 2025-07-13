@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { eveCharacters, accounts } from "~/server/db/schema";
-import { eq, and } from "drizzle-orm";
 import { env } from "~/env";
 
 export async function GET(request: NextRequest) {
@@ -139,11 +138,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Get corporation ID for EVE character data
+    let corporationId = null;
+    if (characterInfoResponse.ok) {
+      const characterInfo = await characterInfoResponse.json() as { corporation_id: number; alliance_id?: number };
+      corporationId = characterInfo.corporation_id;
+    }
+
     // Save EVE-specific data to eve_characters table
     await db.insert(eveCharacters).values({
       characterId: characterData.CharacterID,
       characterName: characterData.CharacterName,
-      corporationId: characterInfoResponse.ok ? (await characterInfoResponse.json()).corporation_id : null,
+      corporationId,
       corporationName,
       allianceId,
       allianceName,

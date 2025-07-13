@@ -21,7 +21,7 @@ export function EveCharacterManager() {
     try {
       const response = await fetch("/api/eve/characters");
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as { characters: EveCharacter[] };
         setCharacters(data.characters);
       }
     } catch (error) {
@@ -47,7 +47,7 @@ export function EveCharacterManager() {
       });
 
       if (response.ok) {
-        setCharacters(characters.filter(char => char.characterId !== characterId));
+        void fetchCharacters();
       }
     } catch (error) {
       console.error("Failed to unlink character:", error);
@@ -55,7 +55,7 @@ export function EveCharacterManager() {
   };
 
   useEffect(() => {
-    fetchCharacters();
+    void fetchCharacters();
   }, []);
 
   if (loading) {
@@ -122,6 +122,7 @@ export function EveCharacterManager() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   {character.portraitUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={character.portraitUrl}
                       alt={character.characterName}

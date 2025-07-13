@@ -21,9 +21,10 @@ export default async function HomePage() {
         ) : (
           <div className="flex flex-col items-center gap-8 w-full max-w-4xl">
             <div className="flex items-center gap-4 text-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src={session.user.image || "/default-avatar.png"} 
-                alt={session.user.name || "User"} 
+                src={session.user.image ?? "/default-avatar.png"} 
+                alt={session.user.name ?? "User"} 
                 className="w-12 h-12 rounded-full"
               />
               <div>
